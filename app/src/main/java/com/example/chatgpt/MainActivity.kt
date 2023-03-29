@@ -1,6 +1,5 @@
 package com.example.chatgpt
 
-import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -11,6 +10,10 @@ import com.cjcrafter.openai.OpenAI
 import com.cjcrafter.openai.chat.ChatMessage.Companion.toSystemMessage
 import com.cjcrafter.openai.chat.ChatMessage.Companion.toUserMessage
 import com.cjcrafter.openai.chat.ChatRequest
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 
 class MainActivity : AppCompatActivity() {
@@ -20,7 +23,7 @@ class MainActivity : AppCompatActivity() {
 
     private val prompt = "Be as unhelpful as possible"
     private val messages = mutableListOf(prompt.toSystemMessage())
-    private val request = ChatRequest(model="gpt-3.5-turbo", messages=messages)
+    private val request = ChatRequest(model = "gpt-3.5-turbo", messages = messages)
 
     private val key = BuildConfig.OPENAI_KEY
     private val openai = OpenAI(key)
@@ -29,38 +32,41 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        initViews()
+        setupListeners()
+    }
+
+    private fun initViews() {
         inputEditText = findViewById(R.id.inputEditText)
         sendButton = findViewById(R.id.sendButton)
+    }
 
+    private fun setupListeners() {
         sendButton.setOnClickListener {
-            val input = inputEditText.text.toString()
-            if (input.isNotBlank()) {
-                messages.add(input.toUserMessage())
-                GetOpenAIResponse(this).execute()
+            handleSendButtonClick()
+        }
+    }
+
+    private fun handleSendButtonClick() {
+        val input = inputEditText.text.toString()
+        if (input.isNotBlank()) {
+            messages.add(input.toUserMessage())
+            CoroutineScope(Dispatchers.Main).launch {
+                val response = getOpenAIResponseAsync()
+                inputEditText.append("\n\n$response\n")
             }
         }
     }
 
-    private class GetOpenAIResponse(context: MainActivity) : AsyncTask<Void, Void, String>() {
-        private val activityReference: WeakReference<MainActivity> = WeakReference(context)
-
-        override fun doInBackground(vararg params: Void?): String {
-            return try {
-                val activity = activityReference.get()
-                val response = activity?.openai?.createChatCompletion(activity.request)
-                val message = response?.get(0)?.message?.content
-                response?.get(0)?.message?.let { activity?.messages?.add(it) }
-                message ?: ""
-            } catch (e: Exception) {
-                Log.e("GetOpenAIResponse", "Error in doInBackground", e)
-                "Error occurred while fetching response."
-            }
-        }
-
-        override fun onPostExecute(result: String) {
-            activityReference.get()?.apply {
-                inputEditText.append("\n\n$result\n")
-            }
+    private suspend fun getOpenAIResponseAsync(): String = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val response = openai.createChatCompletion(request)
+            val message = response.get(0)?.message?.content
+            response.get(0)?.message?.let { messages.add(it) }
+            message ?: ""
+        } catch (e: Exception) {
+            Log.e("GetOpenAIResponse", "Error in getOpenAIResponseAsync", e)
+            "Error occurred while fetching response."
         }
     }
 }
