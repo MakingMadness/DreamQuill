@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var undoButton: Button
     private lateinit var clearButton: Button
 
-    private val prompt = "Be as unhelpful as possible"
+    private val prompt = "Please respond in markdown."
     private val messages = mutableListOf(prompt.toSystemMessage())
     private val request = ChatRequest(model = "gpt-3.5-turbo", messages = messages)
 
