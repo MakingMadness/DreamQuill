@@ -8,28 +8,21 @@
 
     <EditText
         android:id="@+id/inputEditText"
-        android:layout_width="308dp"
-        android:layout_height="50dp"
+        android:layout_width="386dp"
+        android:layout_height="657dp"
+        android:layout_marginTop="16dp"
         android:hint="Enter text here"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/sendButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="364dp"
+        android:layout_height="47dp"
         android:text="Send"
-        app:layout_constraintStart_toEndOf="@+id/inputEditText"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/chatTextView"
-        android:layout_width="400dp"
-        android:layout_height="436dp"
-        android:text="Chat:"
-        app:layout_constraintTop_toBottomOf="@+id/inputEditText"
-        tools:layout_editor_absoluteX="0dp" />
-    />
-
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

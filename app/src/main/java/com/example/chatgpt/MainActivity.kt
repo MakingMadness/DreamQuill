@@ -17,7 +17,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var inputEditText: EditText
     private lateinit var sendButton: Button
-    private lateinit var chatTextView: TextView
 
     private val prompt = "Be as unhelpful as possible"
     private val messages = mutableListOf(prompt.toSystemMessage())
@@ -32,13 +31,11 @@ class MainActivity : AppCompatActivity() {
 
         inputEditText = findViewById(R.id.inputEditText)
         sendButton = findViewById(R.id.sendButton)
-        chatTextView = findViewById(R.id.chatTextView)
 
         sendButton.setOnClickListener {
             val input = inputEditText.text.toString()
             if (input.isNotBlank()) {
                 messages.add(input.toUserMessage())
-                inputEditText.setText("")
                 GetOpenAIResponse(this).execute()
             }
         }
@@ -62,8 +59,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun onPostExecute(result: String) {
             activityReference.get()?.apply {
-                chatTextView.append("\nUser: ${messages.last().content}\n")
-                chatTextView.append("Bot: $result\n")
+                inputEditText.append("\n\n$result\n")
             }
         }
     }
