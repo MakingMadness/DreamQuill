@@ -9,6 +9,8 @@ Todo: Increase the timeout.
 
 package com.makingmadness.dreamquill
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -33,16 +35,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var undoButton: Button
     private lateinit var clearButton: Button
     private lateinit var progressBar: ProgressBar
+    private lateinit var settingsButton: Button
+    private lateinit var key: String
+    private lateinit var openai: OpenAI
+    private lateinit var aiChatManager: AIChatManager
 
     private val prompt = "Please respond in markdown."
     private val messages = mutableListOf(prompt.toSystemMessage())
     private val request = ChatRequest(model = "gpt-3.5-turbo", messages = messages)
 
-    private val key = BuildConfig.OPENAI_KEY
-    private val openai = OpenAI(key)
-
     private val undoRedoManager = UndoRedoManager()
-    private val aiChatManager = AIChatManager(openai, request)
 
     private val coroutineJob = Job()
     private val coroutineScope = CoroutineScope(Dispatchers.Main + coroutineJob)
@@ -50,6 +52,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        key = getSharedPreferences("API_KEY_PREFS", Context.MODE_PRIVATE).getString("API_KEY", "") ?: ""
+        openai = OpenAI(key)
+
+        initAIChatManager()
+
         progressBar = findViewById(R.id.progressBar)
         initViews()
         setupListeners()
@@ -60,11 +68,16 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
+    private fun initAIChatManager() {
+        aiChatManager = AIChatManager(openai, request)
+    }
+
     private fun initViews() {
         inputEditText = findViewById(R.id.inputEditText)
         sendButton = findViewById(R.id.sendButton)
         undoButton = findViewById(R.id.undoButton)
         clearButton = findViewById(R.id.clearButton)
+        settingsButton = findViewById(R.id.settingsButton)
 
         undoButton.isEnabled = false
         progressBar.visibility = View.GONE
@@ -86,6 +99,11 @@ class MainActivity : AppCompatActivity() {
 
         clearButton.setOnClickListener {
             inputEditText.setText("")
+        }
+
+        settingsButton.setOnClickListener {
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
         }
 
         inputEditText.addTextChangedListener(createTextWatcher())
