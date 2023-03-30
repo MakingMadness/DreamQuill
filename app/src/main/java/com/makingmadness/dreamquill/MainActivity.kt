@@ -1,5 +1,4 @@
 /*
-Todo: Add a copy to clipboard button.
 Todo: Add a dropdown box of ChatGPT models.
 Todo: Add inputs to change repetition.
 Todo: Allow the default prompt to be changed.
@@ -8,6 +7,8 @@ Todo: Increase the timeout.
 
 package com.makingmadness.dreamquill
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -17,6 +18,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
@@ -35,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sendButton: Button
     private lateinit var undoButton: Button
     private lateinit var clearButton: Button
+    private lateinit var copyButton: Button
     private lateinit var progressBar: ProgressBar
     private lateinit var settingsButton: Button
     private lateinit var openai: OpenAI
@@ -91,6 +94,7 @@ class MainActivity : AppCompatActivity() {
         undoButton = findViewById(R.id.undoButton)
         clearButton = findViewById(R.id.clearButton)
         settingsButton = findViewById(R.id.settingsButton)
+        copyButton = findViewById(R.id.copyButton)
 
         undoButton.isEnabled = false
         progressBar.visibility = View.GONE
@@ -119,12 +123,26 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        copyButton.setOnClickListener {
+            copyTextToClipboard()
+        }
+
         inputEditText.addTextChangedListener(createTextWatcher())
     }
 
+    private fun copyTextToClipboard() {
+        val clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clipData = ClipData.newPlainText("DreamQuillAppText", inputEditText.text.toString())
+        clipboardManager.setPrimaryClip(clipData)
+        showToast("Text copied to clipboard")
+    }
 
     private fun updateUndoButtonText(newText: String) {
         undoButton.text = newText
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     private fun createTextWatcher() = object : TextWatcher {
