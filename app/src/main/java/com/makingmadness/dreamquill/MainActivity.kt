@@ -1,3 +1,14 @@
+/*
+Todo: Store the API key in Android, changeable through settings.
+Todo: Add a copy to clipboard button.
+Todo: Add a dropdown box of ChatGPT models.
+Todo: Add inputs to change repetition.
+Todo: Allow the default prompt to be changed.
+Todo: Add a scrollbar for the text area.
+Todo: Give feedback when awaiting a response.
+Todo: Increase the timeout.
+ */
+
 package com.makingmadness.dreamquill
 
 import android.os.Bundle
@@ -7,10 +18,13 @@ import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.cjcrafter.openai.OpenAI
 import com.cjcrafter.openai.chat.ChatMessage.Companion.toSystemMessage
 import com.cjcrafter.openai.chat.ChatMessage.Companion.toUserMessage
 import com.cjcrafter.openai.chat.ChatRequest
+import com.cjcrafter.openai.exception.WrappedIOError
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -94,22 +108,39 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.Main).launch {
             val response = getOpenAIResponseAsync()
             undoRedoManager.addUndoableOperation(response)
-            inputEditText.append("\n\n$response\n\n")
-            undoButton.isEnabled = true
+            if (response.isNotBlank()) {
+                inputEditText.append("\n\n$response\n\n")
+                undoButton.isEnabled = true
+            }
         }
     }
 
     private suspend fun getOpenAIResponseAsync(): String = withContext(Dispatchers.IO) {
+        val layout = findViewById<ConstraintLayout>(R.id.constraint_layout)
         return@withContext try {
             val response = openai.createChatCompletion(request)
             val message = response.get(0)?.message?.content
             response.get(0)?.message?.let { messages.add(it) }
             message ?: ""
+        } catch (e: WrappedIOError) {
+            Log.e("GetOpenAIResponse", "Error in getOpenAIResponseAsync", e)
+            withContext(Dispatchers.Main) {
+                if (e.message?.contains("timeout") == true) {
+                    Snackbar.make(layout, "Request timed out.", Snackbar.LENGTH_SHORT).show()
+                } else {
+                    Snackbar.make(layout, "An IO error occurred while fetching a response.", Snackbar.LENGTH_SHORT).show()
+                }
+            }
+            ""
         } catch (e: Exception) {
             Log.e("GetOpenAIResponse", "Error in getOpenAIResponseAsync", e)
-            "Error occurred while fetching response."
+            withContext(Dispatchers.Main) {
+                Snackbar.make(layout, "An unknown error occurred while fetching a response.", Snackbar.LENGTH_SHORT).show()
+            }
+            ""
         }
     }
+
 
     private inner class UndoRedoManager {
         private var undoStack = mutableListOf<String>()
