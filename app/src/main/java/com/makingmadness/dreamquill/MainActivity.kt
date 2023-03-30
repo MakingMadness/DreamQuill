@@ -5,30 +5,26 @@ Todo: Add a dropdown box of ChatGPT models.
 Todo: Add inputs to change repetition.
 Todo: Allow the default prompt to be changed.
 Todo: Increase the timeout.
- */
+*/
 
 package com.makingmadness.dreamquill
 
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import com.cjcrafter.openai.OpenAI
 import com.cjcrafter.openai.chat.ChatMessage.Companion.toSystemMessage
 import com.cjcrafter.openai.chat.ChatMessage.Companion.toUserMessage
 import com.cjcrafter.openai.chat.ChatRequest
-import com.cjcrafter.openai.exception.WrappedIOError
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
@@ -46,6 +42,10 @@ class MainActivity : AppCompatActivity() {
     private val openai = OpenAI(key)
 
     private val undoRedoManager = UndoRedoManager()
+    private val aiChatManager = AIChatManager(openai, request)
+
+    private val coroutineJob = Job()
+    private val coroutineScope = CoroutineScope(Dispatchers.Main + coroutineJob)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +53,11 @@ class MainActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
         initViews()
         setupListeners()
+    }
+
+    override fun onDestroy() {
+        coroutineJob.cancel()
+        super.onDestroy()
     }
 
     private fun initViews() {
@@ -71,7 +76,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         undoButton.setOnClickListener {
-            undoRedoManager.toggleUndoRedo()
+            undoRedoManager.toggleUndoRedo({ newText ->
+                inputEditText.apply {
+                    setText(newText)
+                    setSelection(newText.length)
+                }
+            }, ::updateUndoButtonText, inputEditText.text.toString())
         }
 
         clearButton.setOnClickListener {
@@ -79,6 +89,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         inputEditText.addTextChangedListener(createTextWatcher())
+    }
+
+
+    private fun updateUndoButtonText(newText: String) {
+        undoButton.text = newText
     }
 
     private fun createTextWatcher() = object : TextWatcher {
@@ -107,7 +122,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestResponseAndUpdateUI() {
-        CoroutineScope(Dispatchers.Main).launch {
+        coroutineScope.launch {
 
             // Disable UI while fetching.
             progressBar.visibility = View.VISIBLE
@@ -115,8 +130,9 @@ class MainActivity : AppCompatActivity() {
             clearButton.isEnabled = false
             sendButton.isEnabled = false
             undoButton.isEnabled = false
+
             // Fetch a response.
-            val response = getOpenAIResponseAsync()
+            val response = aiChatManager.getOpenAIResponseAsync(this@MainActivity)
 
             // Re-enable UI.
             progressBar.visibility = View.GONE
@@ -128,90 +144,6 @@ class MainActivity : AppCompatActivity() {
             if (response.isNotBlank()) {
                 inputEditText.append("\n\n$response\n\n")
                 undoButton.isEnabled = true
-            }
-
-        }
-    }
-
-    private suspend fun getOpenAIResponseAsync(): String = withContext(Dispatchers.IO) {
-        val layout = findViewById<ConstraintLayout>(R.id.constraint_layout)
-        return@withContext try {
-            val response = openai.createChatCompletion(request)
-            val message = response[0].message.content
-            response[0].message.let { messages.add(it) }
-            message
-        } catch (e: WrappedIOError) {
-            Log.e("GetOpenAIResponse", "Error in getOpenAIResponseAsync", e)
-            withContext(Dispatchers.Main) {
-                if (e.message?.contains("timeout") == true) {
-                    Snackbar.make(layout, "Request timed out.", Snackbar.LENGTH_SHORT).show()
-                } else {
-                    Snackbar.make(layout, "An IO error occurred while fetching a response.", Snackbar.LENGTH_SHORT).show()
-                }
-            }
-            ""
-        } catch (e: Exception) {
-            Log.e("GetOpenAIResponse", "Error in getOpenAIResponseAsync", e)
-            withContext(Dispatchers.Main) {
-                Snackbar.make(layout, "An unknown error occurred while fetching a response.", Snackbar.LENGTH_SHORT).show()
-            }
-            ""
-        }
-    }
-
-    private inner class UndoRedoManager {
-        private var undoStack = mutableListOf<String>()
-        private var redoStack = mutableListOf<String>()
-        private var inUndoRedoMode = false
-
-        val isUserTyping: Boolean
-            get() = !inUndoRedoMode
-
-        fun addUndoableOperation(text: String) {
-            if (!inUndoRedoMode) {
-                undoStack.add(text)
-                redoStack.clear()
-            }
-        }
-
-        fun toggleUndoRedo() {
-            inUndoRedoMode = true
-            if (redoStack.isEmpty()) {
-                performUndo()
-            } else {
-                performRedo()
-            }
-            inUndoRedoMode = false
-        }
-
-        private fun performUndo() {
-            if (undoStack.isNotEmpty()) {
-                val lastText = undoStack.removeLast()
-                updateInputEditText { currentText ->
-                    currentText.removeSuffix("\n\n$lastText\n\n")
-                }
-                redoStack.add(lastText)
-                undoButton.text = "Redo"
-            }
-        }
-
-        private fun performRedo() {
-            if (redoStack.isNotEmpty()) {
-                val lastText = redoStack.removeLast()
-                updateInputEditText { currentText ->
-                    "$currentText\n\n$lastText\n\n"
-                }
-                undoStack.add(lastText)
-                undoButton.text = "Undo"
-            }
-        }
-
-        private fun updateInputEditText(update: (String) -> String) {
-            inputEditText.apply {
-                val currentText = text.toString()
-                val newText = update(currentText)
-                setText(newText)
-                setSelection(newText.length)
             }
         }
     }
