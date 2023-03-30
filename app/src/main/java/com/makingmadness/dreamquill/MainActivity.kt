@@ -1,3 +1,12 @@
+/*
+Todo: Store the API key in Android, changeable through settings.
+Todo: Add a copy to clipboard button.
+Todo: Add a dropdown box of ChatGPT models.
+Todo: Add inputs to change repetition.
+Todo: Allow the default prompt to be changed.
+Todo: Increase the timeout.
+ */
+
 package com.makingmadness.dreamquill
 
 import android.os.Bundle
@@ -99,14 +108,29 @@ class MainActivity : AppCompatActivity() {
 
     private fun requestResponseAndUpdateUI() {
         CoroutineScope(Dispatchers.Main).launch {
+
+            // Disable UI while fetching.
             progressBar.visibility = View.VISIBLE
+            inputEditText.isEnabled = false
+            clearButton.isEnabled = false
+            sendButton.isEnabled = false
+            undoButton.isEnabled = false
+
+            // Fetch a response.
             val response = getOpenAIResponseAsync()
+
+            // Re-enable UI.
             progressBar.visibility = View.GONE
+            inputEditText.isEnabled = true
+            clearButton.isEnabled = true
+            sendButton.isEnabled = true
+
             undoRedoManager.addUndoableOperation(response)
             if (response.isNotBlank()) {
                 inputEditText.append("\n\n$response\n\n")
                 undoButton.isEnabled = true
             }
+
         }
     }
 
