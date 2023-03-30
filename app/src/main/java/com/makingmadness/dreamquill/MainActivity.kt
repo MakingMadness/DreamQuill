@@ -115,7 +115,6 @@ class MainActivity : AppCompatActivity() {
             clearButton.isEnabled = false
             sendButton.isEnabled = false
             undoButton.isEnabled = false
-
             // Fetch a response.
             val response = getOpenAIResponseAsync()
 
@@ -138,9 +137,9 @@ class MainActivity : AppCompatActivity() {
         val layout = findViewById<ConstraintLayout>(R.id.constraint_layout)
         return@withContext try {
             val response = openai.createChatCompletion(request)
-            val message = response.get(0)?.message?.content
-            response.get(0)?.message?.let { messages.add(it) }
-            message ?: ""
+            val message = response[0].message.content
+            response[0].message.let { messages.add(it) }
+            message
         } catch (e: WrappedIOError) {
             Log.e("GetOpenAIResponse", "Error in getOpenAIResponseAsync", e)
             withContext(Dispatchers.Main) {
@@ -159,6 +158,7 @@ class MainActivity : AppCompatActivity() {
             ""
         }
     }
+
     private inner class UndoRedoManager {
         private var undoStack = mutableListOf<String>()
         private var redoStack = mutableListOf<String>()
