@@ -44,8 +44,9 @@ class MainActivity : AppCompatActivity() {
         inputEditText = findViewById(R.id.inputEditText)
         sendButton = findViewById(R.id.sendButton)
         undoButton = findViewById(R.id.undoButton)
-        undoButton.isEnabled = false
         clearButton = findViewById(R.id.clearButton)
+
+        undoButton.isEnabled = false
     }
 
     private fun setupListeners() {
@@ -61,30 +62,40 @@ class MainActivity : AppCompatActivity() {
             inputEditText.setText("")
         }
 
-        inputEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+        inputEditText.addTextChangedListener(createTextWatcher())
+    }
 
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
+    private fun createTextWatcher() = object : TextWatcher {
+        override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
 
-            override fun afterTextChanged(s: Editable) {
-                if (undoRedoManager.isUserTyping) {
-                    undoButton.isEnabled = false
-                    undoButton.text = "Undo"
-                }
-            }
-        })
+        override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
+
+        override fun afterTextChanged(s: Editable) {
+            updateUndoButtonState()
+        }
+    }
+
+    private fun updateUndoButtonState() {
+        if (undoRedoManager.isUserTyping) {
+            undoButton.isEnabled = false
+            undoButton.text = "Undo"
+        }
     }
 
     private fun handleSendButtonClick() {
         val input = inputEditText.text.toString()
         if (input.isNotBlank()) {
             messages.add(input.toUserMessage())
-            CoroutineScope(Dispatchers.Main).launch {
-                val response = getOpenAIResponseAsync()
-                undoRedoManager.addUndoableOperation(response)
-                inputEditText.append("\n\n$response\n\n")
-                undoButton.isEnabled = true
-            }
+            requestResponseAndUpdateUI()
+        }
+    }
+
+    private fun requestResponseAndUpdateUI() {
+        CoroutineScope(Dispatchers.Main).launch {
+            val response = getOpenAIResponseAsync()
+            undoRedoManager.addUndoableOperation(response)
+            inputEditText.append("\n\n$response\n\n")
+            undoButton.isEnabled = true
         }
     }
 
@@ -118,25 +129,33 @@ class MainActivity : AppCompatActivity() {
         fun toggleUndoRedo() {
             inUndoRedoMode = true
             if (redoStack.isEmpty()) {
-                if (undoStack.isNotEmpty()) {
-                    val lastText = undoStack.removeLast()
-                    updateInputEditText { currentText ->
-                        currentText.removeSuffix("\n\n$lastText\n")
-                    }
-                    redoStack.add(lastText)
-                    undoButton.text = "Redo"
-                }
+                performUndo()
             } else {
-                if (redoStack.isNotEmpty()) {
-                    val lastText = redoStack.removeLast()
-                    updateInputEditText { currentText ->
-                        "$currentText\n\n$lastText\n"
-                    }
-                    undoStack.add(lastText)
-                    undoButton.text = "Undo"
-                }
+                performRedo()
             }
             inUndoRedoMode = false
+        }
+
+        private fun performUndo() {
+            if (undoStack.isNotEmpty()) {
+                val lastText = undoStack.removeLast()
+                updateInputEditText { currentText ->
+                    currentText.removeSuffix("\n\n$lastText\n")
+                }
+                redoStack.add(lastText)
+                undoButton.text = "Redo"
+            }
+        }
+
+        private fun performRedo() {
+            if (redoStack.isNotEmpty()) {
+                val lastText = redoStack.removeLast()
+                updateInputEditText { currentText ->
+                    "$currentText\n\n$lastText\n"
+                }
+                undoStack.add(lastText)
+                undoButton.text = "Undo"
+            }
         }
 
         private fun updateInputEditText(update: (String) -> String) {
