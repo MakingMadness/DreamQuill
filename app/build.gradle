@@ -8,15 +8,15 @@ def apikeyProperties = new Properties()
 apikeyProperties.load(new FileInputStream(apikeyPropertiesFile))
 
 android {
-    namespace 'com.example.chatgpt'
+    namespace 'com.makingmadness.dreamquill'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.example.chatgpt"
+        applicationId 'com.makingmadness.dreamquill'
         minSdk 28
         targetSdk 33
         versionCode 1
-        versionName "1.0"
+        versionName '0.1'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "OPENAI_KEY", apikeyProperties['OPENAI_KEY'])
     }

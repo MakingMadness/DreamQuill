@@ -1,4 +1,4 @@
-package com.example.chatgpt
+package com.makingmadness.dreamquill
 
 import android.os.Bundle
 import android.text.Editable
@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity() {
             CoroutineScope(Dispatchers.Main).launch {
                 val response = getOpenAIResponseAsync()
                 undoRedoManager.addUndoableOperation(response)
-                inputEditText.append("\n\n$response\n")
+                inputEditText.append("\n\n$response\n\n")
                 undoButton.isEnabled = true
             }
         }

@@ -1,4 +1,4 @@
-package com.example.chatgpt
+package com.makingmadness.dreamquill
 
 import org.junit.Test
 
