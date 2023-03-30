@@ -1,5 +1,4 @@
 /*
-Todo: Store the API key in Android, changeable through settings.
 Todo: Add a copy to clipboard button.
 Todo: Add a dropdown box of ChatGPT models.
 Todo: Add inputs to change repetition.
@@ -19,6 +18,8 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.cjcrafter.openai.OpenAI
 import com.cjcrafter.openai.chat.ChatMessage.Companion.toSystemMessage
 import com.cjcrafter.openai.chat.ChatMessage.Companion.toUserMessage
@@ -36,7 +37,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var clearButton: Button
     private lateinit var progressBar: ProgressBar
     private lateinit var settingsButton: Button
-    private lateinit var key: String
     private lateinit var openai: OpenAI
     private lateinit var aiChatManager: AIChatManager
 
@@ -49,11 +49,24 @@ class MainActivity : AppCompatActivity() {
     private val coroutineJob = Job()
     private val coroutineScope = CoroutineScope(Dispatchers.Main + coroutineJob)
 
+    private val key by lazy {
+        val masterKey = MasterKey.Builder(this)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+        val sharedPreferences = EncryptedSharedPreferences.create(
+            this,
+            "API_KEY_PREFS",
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+        sharedPreferences.getString("API_KEY", "") ?: ""
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        key = getSharedPreferences("API_KEY_PREFS", Context.MODE_PRIVATE).getString("API_KEY", "") ?: ""
         openai = OpenAI(key)
 
         initAIChatManager()
