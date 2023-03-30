@@ -4,7 +4,6 @@ Todo: Add a copy to clipboard button.
 Todo: Add a dropdown box of ChatGPT models.
 Todo: Add inputs to change repetition.
 Todo: Allow the default prompt to be changed.
-Todo: Add a scrollbar for the text area.
 Todo: Give feedback when awaiting a response.
 Todo: Increase the timeout.
  */
