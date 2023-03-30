@@ -1,21 +1,13 @@
-/*
-Todo: Store the API key in Android, changeable through settings.
-Todo: Add a copy to clipboard button.
-Todo: Add a dropdown box of ChatGPT models.
-Todo: Add inputs to change repetition.
-Todo: Allow the default prompt to be changed.
-Todo: Give feedback when awaiting a response.
-Todo: Increase the timeout.
- */
-
 package com.makingmadness.dreamquill
 
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.cjcrafter.openai.OpenAI
@@ -35,6 +27,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sendButton: Button
     private lateinit var undoButton: Button
     private lateinit var clearButton: Button
+    private lateinit var progressBar: ProgressBar
 
     private val prompt = "Please respond in markdown."
     private val messages = mutableListOf(prompt.toSystemMessage())
@@ -48,7 +41,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        progressBar = findViewById(R.id.progressBar)
         initViews()
         setupListeners()
     }
@@ -60,6 +53,7 @@ class MainActivity : AppCompatActivity() {
         clearButton = findViewById(R.id.clearButton)
 
         undoButton.isEnabled = false
+        progressBar.visibility = View.GONE
     }
 
     private fun setupListeners() {
@@ -105,7 +99,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun requestResponseAndUpdateUI() {
         CoroutineScope(Dispatchers.Main).launch {
+            progressBar.visibility = View.VISIBLE
             val response = getOpenAIResponseAsync()
+            progressBar.visibility = View.GONE
             undoRedoManager.addUndoableOperation(response)
             if (response.isNotBlank()) {
                 inputEditText.append("\n\n$response\n\n")
@@ -139,8 +135,6 @@ class MainActivity : AppCompatActivity() {
             ""
         }
     }
-
-
     private inner class UndoRedoManager {
         private var undoStack = mutableListOf<String>()
         private var redoStack = mutableListOf<String>()

@@ -10,6 +10,7 @@
 
     <!-- InputEditText -->
     <ScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:fillViewport="true"
         android:layout_height="0dp"
@@ -30,6 +31,15 @@
 
     </ScrollView>
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/scrollView"
+        app:layout_constraintEnd_toEndOf="@+id/scrollView"
+        app:layout_constraintStart_toStartOf="@+id/scrollView"
+        app:layout_constraintTop_toTopOf="@+id/scrollView"
+        android:visibility="gone" />
 
     <!-- Buttons Container -->
     <LinearLayout
