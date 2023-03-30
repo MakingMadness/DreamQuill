@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity() {
             if (undoStack.isNotEmpty()) {
                 val lastText = undoStack.removeLast()
                 updateInputEditText { currentText ->
-                    currentText.removeSuffix("\n\n$lastText\n")
+                    currentText.removeSuffix("\n\n$lastText\n\n")
                 }
                 redoStack.add(lastText)
                 undoButton.text = "Redo"
@@ -151,7 +151,7 @@ class MainActivity : AppCompatActivity() {
             if (redoStack.isNotEmpty()) {
                 val lastText = redoStack.removeLast()
                 updateInputEditText { currentText ->
-                    "$currentText\n\n$lastText\n"
+                    "$currentText\n\n$lastText\n\n"
                 }
                 undoStack.add(lastText)
                 undoButton.text = "Undo"
