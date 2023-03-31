@@ -20,10 +20,26 @@
         android:layout_height="wrap_content"
         android:inputType="text" />
 
-    <Button
-        android:id="@+id/save_api_key_button"
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Save API Key" />
+        android:text="Response Timeout (in seconds):"
+        android:textSize="18sp" />
+
+    <EditText
+        android:id="@+id/timeout_edit_text"
+        android:key="timeout"
+        android:title="Timeout (in seconds)"
+        android:summary="Enter the timeout value in seconds"
+        android:dialogTitle="Set Timeout"
+        android:defaultValue="30"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent" />
+
+    <Button
+        android:id="@+id/save_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Save" />
 
 </LinearLayout>

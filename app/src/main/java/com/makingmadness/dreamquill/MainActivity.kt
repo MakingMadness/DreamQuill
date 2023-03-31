@@ -2,7 +2,7 @@
 Todo: Add a dropdown box of ChatGPT models.
 Todo: Add inputs to change repetition.
 Todo: Allow the default prompt to be changed.
-Todo: Increase the timeout.
+Todo: Capitalise text.
 */
 
 package com.makingmadness.dreamquill
@@ -30,6 +30,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
+import java.util.concurrent.TimeUnit
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -56,21 +59,23 @@ class MainActivity : AppCompatActivity() {
         val masterKey = MasterKey.Builder(this)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
-        val sharedPreferences = EncryptedSharedPreferences.create(
+        val encryptedSharedPreferences = EncryptedSharedPreferences.create(
             this,
             "API_KEY_PREFS",
             masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
-        sharedPreferences.getString("API_KEY", "") ?: ""
+        encryptedSharedPreferences.getString("API_KEY", "") ?: ""
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        openai = OpenAI(key)
+        val sharedPreferences = getSharedPreferences("DREAMQUILL_PREFS", Context.MODE_PRIVATE)
+        val timeout = sharedPreferences.getInt("TIMEOUT", 30)
+        openai = OpenAI(key, null, OkHttpClient.Builder().readTimeout(timeout.toLong(), TimeUnit.SECONDS).build())
 
         initAIChatManager()
 
