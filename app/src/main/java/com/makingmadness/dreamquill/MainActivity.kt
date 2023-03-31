@@ -14,6 +14,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -23,6 +24,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.cjcrafter.openai.OpenAI
+import com.cjcrafter.openai.chat.ChatMessage
 import com.cjcrafter.openai.chat.ChatMessage.Companion.toSystemMessage
 import com.cjcrafter.openai.chat.ChatMessage.Companion.toUserMessage
 import com.cjcrafter.openai.chat.ChatRequest
@@ -46,8 +48,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var openai: OpenAI
     private lateinit var aiChatManager: AIChatManager
 
-    private val prompt = "Please respond in markdown."
-    private val messages = mutableListOf(prompt.toSystemMessage())
+    private val messages = mutableListOf<ChatMessage>()
     private val request = ChatRequest(model = "gpt-3.5-turbo", messages = messages)
 
     private val undoRedoManager = UndoRedoManager()
@@ -173,11 +174,14 @@ class MainActivity : AppCompatActivity() {
             startActivity(settingsIntent)
             showToast("Please enter your API key in the settings.")
         } else {
+            val sharedPreferences = getSharedPreferences("DREAMQUILL_PREFS", Context.MODE_PRIVATE)
+            val prompt = sharedPreferences.getString("PROMPT_PREFIX", null) ?: "Respond in markdown format."
             val input = inputEditText.text.toString()
             if (input.isNotBlank()) {
                 messages.clear()
                 messages.add(prompt.toSystemMessage())
                 messages.add(input.toUserMessage())
+                Log.d("DreamQuill", "Messages: $messages")
                 requestResponseAndUpdateUI()
             }
         }

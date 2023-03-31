@@ -16,6 +16,7 @@ class SettingsActivity : AppCompatActivity() {
 
     private lateinit var apiKeyEditText: EditText
     private lateinit var timeoutEditText: EditText
+    private lateinit var promptPrefixEditText: EditText
 
     private lateinit var encryptedSharedPreferences: SharedPreferences
     private lateinit var timeoutSharedPreferences: SharedPreferences
@@ -39,12 +40,15 @@ class SettingsActivity : AppCompatActivity() {
 
         apiKeyEditText = findViewById(R.id.api_key_edit_text)
         timeoutEditText = findViewById(R.id.timeout_edit_text)
+        promptPrefixEditText = findViewById(R.id.prompt_prefix_edit_text)
 
         loadApiKey()
         loadTimeout()
+        loadPromptPrefix()
 
         apiKeyEditText.addTextChangedListener { saveApiKey() }
         timeoutEditText.addTextChangedListener { saveTimeout() }
+        promptPrefixEditText.addTextChangedListener { savePromptPrefix() }
 
         val openaiLink: TextView = findViewById(R.id.openai_link)
         openaiLink.setOnClickListener {
@@ -72,6 +76,16 @@ class SettingsActivity : AppCompatActivity() {
     private fun saveTimeout() {
         val timeout = timeoutEditText.text.toString().toIntOrNull() ?: 0
         timeoutSharedPreferences.edit().putInt("TIMEOUT", timeout).apply()
+    }
+
+    private fun loadPromptPrefix() {
+        val promptPrefix = timeoutSharedPreferences.getString("PROMPT_PREFIX", "Please respond in markdown format.")
+        promptPrefixEditText.setText(promptPrefix)
+    }
+
+    private fun savePromptPrefix() {
+        val promptPrefix = promptPrefixEditText.text.toString()
+        timeoutSharedPreferences.edit().putString("PROMPT_PREFIX", promptPrefix).apply()
     }
 
     private fun EditText.addTextChangedListener(afterTextChanged: (Editable) -> Unit) {

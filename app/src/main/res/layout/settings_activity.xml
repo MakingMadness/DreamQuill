@@ -11,7 +11,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="API Key:"
+        android:text="API Key"
         android:textSize="24sp"
         android:textStyle="bold" />
 
@@ -38,7 +38,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Response Timeout (in seconds):"
+        android:text="Response Timeout (in seconds)"
         android:textSize="24sp"
         android:textStyle="bold"
         android:layout_marginTop="16dp" />
@@ -52,5 +52,27 @@
         android:defaultValue="30"
         android:layout_height="wrap_content"
         android:layout_width="match_parent" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Prompt Prefix"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp" />
+
+    <EditText
+        android:id="@+id/prompt_prefix_edit_text"
+        android:key="timeout"
+        android:title="Prompt Prefix"
+        android:defaultValue="Please respond in markdown format."
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="This will get added to the start of every request."
+        android:textSize="16sp" />
 
 </LinearLayout>
