@@ -1,8 +1,6 @@
 /*
 Todo: Add a dropdown box of ChatGPT models.
 Todo: Add inputs to change repetition.
-Todo: Allow the default prompt to be changed.
-Todo: Capitalise text.
 */
 
 package com.makingmadness.dreamquill
