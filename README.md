@@ -6,4 +6,4 @@ A lightweight UI for doing text completion with ChatGPT. You can easily copy the
 
 ## Installation
 
-Go to [Releases](https://github.com/MakingMadness/DreamQuill) to download and install the latest APK.
+Go to [Releases](https://github.com/MakingMadness/DreamQuill/releases) to download and install the latest APK.
