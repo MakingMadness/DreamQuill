@@ -8,6 +8,9 @@ import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import android.content.Intent
+import android.net.Uri
+import android.widget.TextView
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -42,6 +45,13 @@ class SettingsActivity : AppCompatActivity() {
 
         apiKeyEditText.addTextChangedListener { saveApiKey() }
         timeoutEditText.addTextChangedListener { saveTimeout() }
+
+        val openaiLink: TextView = findViewById(R.id.openai_link)
+        openaiLink.setOnClickListener {
+            val openUrlIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://platform.openai.com/signup"))
+            openUrlIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(openUrlIntent)
+        }
     }
 
     private fun loadApiKey() {

@@ -168,10 +168,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleSendButtonClick() {
-        val input = inputEditText.text.toString()
-        if (input.isNotBlank()) {
-            messages.add(input.toUserMessage())
-            requestResponseAndUpdateUI()
+        if (key.isNullOrEmpty()) {
+            val settingsIntent = Intent(this, SettingsActivity::class.java)
+            startActivity(settingsIntent)
+            showToast("Please enter your API key in the settings.")
+        } else {
+            val input = inputEditText.text.toString()
+            if (input.isNotBlank()) {
+                messages.add(input.toUserMessage())
+                requestResponseAndUpdateUI()
+            }
         }
     }
 

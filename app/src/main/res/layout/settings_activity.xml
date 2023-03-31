@@ -12,7 +12,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="API Key:"
-        android:textSize="18sp" />
+        android:textSize="24sp"
+        android:textStyle="bold" />
 
     <EditText
         android:id="@+id/api_key_edit_text"
@@ -23,8 +24,24 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Enter an OpenAI API key. You can obtain it from:"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/openai_link"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="https://platform.openai.com/account/api-keys"
+        android:textSize="16sp"
+        android:textColor="@android:color/holo_blue_light" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:text="Response Timeout (in seconds):"
-        android:textSize="18sp" />
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp" />
 
     <EditText
         android:id="@+id/timeout_edit_text"
