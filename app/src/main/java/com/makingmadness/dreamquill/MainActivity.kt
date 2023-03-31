@@ -175,6 +175,8 @@ class MainActivity : AppCompatActivity() {
         } else {
             val input = inputEditText.text.toString()
             if (input.isNotBlank()) {
+                messages.clear()
+                messages.add(prompt.toSystemMessage())
                 messages.add(input.toUserMessage())
                 requestResponseAndUpdateUI()
             }
