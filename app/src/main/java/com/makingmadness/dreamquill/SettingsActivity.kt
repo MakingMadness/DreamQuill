@@ -69,7 +69,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun loadTimeout() {
-        val timeout = timeoutSharedPreferences.getInt("TIMEOUT", 0)
+        val timeout = timeoutSharedPreferences.getInt("TIMEOUT", 30)
         timeoutEditText.setText(timeout.toString())
     }
 
